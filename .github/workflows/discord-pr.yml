@@ -1,0 +1,88 @@
+name: Avisar PR no Discord
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, ready_for_review, closed]
+
+permissions: {}
+
+jobs:
+  notify:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !github.event.pull_request.draft &&
+      (github.event.action != 'closed' || github.event.pull_request.merged)
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Enviar mensagem
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+
+          const event = JSON.parse(
+            readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')
+          );
+          const pr = event.pull_request;
+          const merged = pr.merged === true;
+          const labels = {
+            opened: '🚀 Novo PR para revisão',
+            reopened: '🔄 PR reaberto',
+            ready_for_review: '🚀 PR pronto para revisão',
+            closed: '✅ PR integrado'
+          };
+          const truncate = (text, limit) => text.length <= limit
+            ? text
+            : `${text.slice(0, limit - 1).toWellFormed()}…`;
+          const description = pr.body?.trim() || 'Sem descrição.';
+
+          const payload = {
+            username: 'Overfrag · GitHub',
+            content: `${labels[event.action]}: ${pr.html_url}`,
+            allowed_mentions: { parse: [] },
+            embeds: [{
+              title: truncate(`#${pr.number} — ${pr.title}`, 256),
+              url: pr.html_url,
+              description: description.length > 4000
+                ? `${truncate(description, 3900)}\n\n[Descrição completa no PR](${pr.html_url})`
+                : description,
+              color: merged ? 0x2ecc71 : 0x5865f2,
+              fields: [
+                { name: 'Autor', value: pr.user.login, inline: true },
+                {
+                  name: 'Branches',
+                  value: truncate(`${pr.head.ref} → ${pr.base.ref}`, 512)
+                }
+              ],
+              footer: { text: truncate(event.repository.full_name, 256) }
+            }]
+          };
+
+          try {
+            const url = new URL(process.env.DISCORD_WEBHOOK_URL);
+            url.searchParams.set('wait', 'true');
+
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+              redirect: 'error',
+              signal: AbortSignal.timeout(15000)
+            });
+
+            if (!response.ok) {
+              console.error(`Discord respondeu HTTP ${response.status}.`);
+              process.exitCode = 1;
+            } else {
+              console.log(`Aviso do PR #${pr.number} enviado ao Discord.`);
+            }
+          } catch {
+            console.error('Falha no envio. Confira o secret DISCORD_WEBHOOK_URL e a conexão.');
+            process.exitCode = 1;
+          }
+          NODE

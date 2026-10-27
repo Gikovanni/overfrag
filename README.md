@@ -77,3 +77,19 @@ pnpm format:check
 `pnpm check` roda typecheck, ESLint, testes unitários/integração e build.
 Veja os cenários manuais e limites da cobertura em [docs/testing.md](docs/testing.md).
 Dependências resolvidas ficam fixadas no `pnpm-lock.yaml`.
+
+## Avisos de PR no Discord
+
+O workflow `.github/workflows/discord-pr.yml` avisa quando um PR para `master`
+é aberto, reaberto, fica pronto para revisão ou é integrado. Rascunhos aguardam
+ficar prontos para revisão; fechar sem merge não gera aviso.
+
+Configure o secret de Actions `DISCORD_WEBHOOK_URL` com a URL original do Discord,
+sem `/github` no final, e desative o webhook nativo em Settings → Webhooks para
+evitar mensagens duplicadas. A mensagem inclui título, link, autor, branches e
+descrição; textos longos mostram uma prévia com link para o conteúdo completo.
+
+O job atende branches do próprio repositório, sem checkout ou execução do código
+do PR. Forks são ignorados; PRs do Dependabot normalmente não recebem o secret.
+Menções automáticas ficam desabilitadas. Falhas aparecem na aba Actions sem
+imprimir a URL; reexecutar um job já entregue pode duplicar a mensagem.
