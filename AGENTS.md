@@ -19,5 +19,7 @@ de implementar features. As skills do projeto ficam em `.agents/skills`.
 - Antes de concluir mudanças: `pnpm check` e `pnpm format:check`.
 - Testes devem cobrir comportamento e invariantes, sem alegar validação visual de WebGL em testes de DOM.
 - Preserve arquivos locais existentes; não publicar, fazer merge ou criar PR sem solicitação.
-- A inicialização foi feita em um Git sem commits na branch `master`; alinhar a principal
-  antes de aplicar o fluxo da skill `basic-gitflow` em uma entrega futura com Git.
+- A principal deste repositório é `master`, confirmada pelo usuário. Aplicar a skill
+  `basic-gitflow` usando `master`/`origin/master` onde a skill menciona `main`.
+- Criar branches `feature/*`, `fix/*` ou `chore/*` a partir da principal atualizada;
+  validar e fazer commits em Conventional Commits. Push/PR/merge somente quando solicitados.
