@@ -3,16 +3,13 @@ name: Avisar PR no Discord
 on:
   pull_request:
     branches: [master]
-    types: [opened, reopened, ready_for_review, closed]
+    types: [opened]
 
 permissions: {}
 
 jobs:
   notify:
-    if: >-
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      !github.event.pull_request.draft &&
-      (github.event.action != 'closed' || github.event.pull_request.merged)
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 2
 
@@ -29,13 +26,6 @@ jobs:
             readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')
           );
           const pr = event.pull_request;
-          const merged = pr.merged === true;
-          const labels = {
-            opened: '🚀 Novo PR para revisão',
-            reopened: '🔄 PR reaberto',
-            ready_for_review: '🚀 PR pronto para revisão',
-            closed: '✅ PR integrado'
-          };
           const truncate = (text, limit) => text.length <= limit
             ? text
             : `${text.slice(0, limit - 1).toWellFormed()}…`;
@@ -43,7 +33,7 @@ jobs:
 
           const payload = {
             username: 'Overfrag · GitHub',
-            content: `${labels[event.action]}: ${pr.html_url}`,
+            content: `🚀 Novo PR criado: ${pr.html_url}`,
             allowed_mentions: { parse: [] },
             embeds: [{
               title: truncate(`#${pr.number} — ${pr.title}`, 256),
@@ -51,7 +41,7 @@ jobs:
               description: description.length > 4000
                 ? `${truncate(description, 3900)}\n\n[Descrição completa no PR](${pr.html_url})`
                 : description,
-              color: merged ? 0x2ecc71 : 0x5865f2,
+              color: 0x5865f2,
               fields: [
                 { name: 'Autor', value: pr.user.login, inline: true },
                 {
