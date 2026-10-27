@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+.agents
+fps_web_multiplayer_arquitetura.md
+agents-skills.md

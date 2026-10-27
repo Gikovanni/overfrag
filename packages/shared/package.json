@@ -1,0 +1,29 @@
+{
+  "name": "@overfrag/shared",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/protocol/schema.d.ts",
+      "default": "./dist/protocol/schema.js"
+    },
+    "./physics": {
+      "types": "./dist/simulation/physics.d.ts",
+      "default": "./dist/simulation/physics.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@colyseus/schema": "5.0.42",
+    "@dimforge/rapier3d-compat": "0.21.0"
+  }
+}

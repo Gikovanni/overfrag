@@ -1,0 +1,22 @@
+{
+  "name": "@overfrag/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --import tsx --watch --watch-path=src --watch-path=../../packages/shared/dist src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "start": "node --env-file-if-exists=.env dist/index.js"
+  },
+  "dependencies": {
+    "@colyseus/core": "0.18.23",
+    "@colyseus/ws-transport": "0.18.4",
+    "@overfrag/shared": "workspace:*",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@colyseus/sdk": "0.18.8",
+    "@types/express": "^5.0.0"
+  }
+}
