@@ -5,6 +5,7 @@ export interface ArenaBox {
   center: Vec3;
   halfExtents: Vec3;
   color: number;
+  rotationZ?: number;
 }
 
 // Fonte única para as malhas do cliente e colisores fixos do servidor.
@@ -50,6 +51,50 @@ export const ARENA_BOXES: readonly ArenaBox[] = [
     center: { x: 4, y: 1.5, z: -6 },
     halfExtents: { x: 1.5, y: 1.5, z: 2 },
     color: 0x65bdac,
+  },
+  {
+    id: 'ramp',
+    center: { x: -10, y: 0.65, z: -7 },
+    halfExtents: { x: 2.5, y: 0.2, z: 1.5 },
+    rotationZ: Math.PI / 8,
+    color: 0xb7e57d,
+  },
+  {
+    id: 'steep-ramp',
+    center: { x: -10, y: 2, z: -12 },
+    halfExtents: { x: 3, y: 0.2, z: 1 },
+    rotationZ: Math.PI / 3,
+    color: 0xdc8e70,
+  },
+  {
+    id: 'step-1',
+    center: { x: 6, y: 0.1, z: 0 },
+    halfExtents: { x: 0.5, y: 0.1, z: 1 },
+    color: 0x79b2c2,
+  },
+  {
+    id: 'step-2',
+    center: { x: 7, y: 0.2, z: 0 },
+    halfExtents: { x: 0.5, y: 0.2, z: 1 },
+    color: 0x79b2c2,
+  },
+  {
+    id: 'step-3',
+    center: { x: 8, y: 0.3, z: 0 },
+    halfExtents: { x: 0.5, y: 0.3, z: 1 },
+    color: 0x79b2c2,
+  },
+  {
+    id: 'low-ceiling',
+    center: { x: -8, y: 1.6, z: 2 },
+    halfExtents: { x: 2, y: 0.25, z: 1.5 },
+    color: 0xc28cc9,
+  },
+  {
+    id: 'thin-wall',
+    center: { x: 11, y: 1.5, z: -9 },
+    halfExtents: { x: 0.04, y: 1.5, z: 2 },
+    color: 0xdc8e70,
   },
 ];
 

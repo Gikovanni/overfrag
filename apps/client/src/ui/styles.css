@@ -205,6 +205,31 @@ canvas {
   font-size: 10px;
   pointer-events: none;
 }
+.performance {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  display: grid;
+  gap: 6px;
+  text-align: right;
+  font: 11px/1.4 monospace;
+  color: #10202a;
+  pointer-events: none;
+}
+.loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #243e48;
+  z-index: 2;
+  font-size: 13px;
+}
+input[type='range'] {
+  padding: 0;
+  margin-top: 12px;
+  accent-color: #b7e57d;
+}
 @media (max-width: 850px) {
   .shell {
     padding: 0 18px 20px;
