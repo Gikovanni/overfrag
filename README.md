@@ -95,9 +95,9 @@ Dependências resolvidas ficam fixadas no `pnpm-lock.yaml`.
 
 ## Avisos de PR no Discord
 
-O workflow `.github/workflows/discord-pr.yml` avisa quando um PR para `master`
-é aberto, reaberto, fica pronto para revisão ou é integrado. Rascunhos aguardam
-ficar prontos para revisão; fechar sem merge não gera aviso.
+O workflow `.github/workflows/discord-pr.yml` avisa somente quando um PR para
+`master` é criado, inclusive rascunhos. Reabertura, mudanças de descrição, novos
+commits, passagem para revisão, fechamento e merge não geram novos avisos.
 
 Configure o secret de Actions `DISCORD_WEBHOOK_URL` com a URL original do Discord,
 sem `/github` no final, e desative o webhook nativo em Settings → Webhooks para
