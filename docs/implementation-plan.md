@@ -12,6 +12,10 @@ spawn estático, cleanup, RTT, schema, configurações e validação básica de 
 O scaffold de sala antecipa a infraestrutura da fase 2 original sem declarar
 movimentação multiplayer concluída.
 
+**Implementado — F01: movimentação local.** Input sequenciado, cápsula Rapier,
+caminhada, sprint, pulo, agachamento, slide, pista de obstáculos e métricas no HUD.
+A sala online continua estática. Validação de feel e hardware-alvo permanece manual.
+
 ## Ordem e dependências
 
 ```mermaid
@@ -33,13 +37,13 @@ de segurança e métricas acompanham a implementação, não ficam apenas para F
 
 **Depende de:** F00. **Skills:** fps-movement, rapier-physics, threejs-fps, game-testing.
 
-- [ ] F01.1 Capturar teclado/mouse separado do render; comandos em ticks fixos, normalização diagonal e bordas de botões.
-- [ ] F01.2 Criar cápsula cinemática + character controller Rapier, grupos de colisão, grounded, gravidade e sincronização câmera/corpo.
-- [ ] F01.3 Caminhada, aceleração, atrito, sprint e pulo; declarar regras de prioridade entre estados.
-- [ ] F01.4 Agachar com mudança real do collider e checagem de teto antes de levantar.
-- [ ] F01.5 Slide com velocidade mínima, atrito, duração e proteção contra ganho de velocidade por repetição.
-- [ ] F01.6 Adicionar rampas, escadas, quinas, teto baixo e paredes finas ao mapa de testes compartilhado.
-- [ ] F01.7 Instrumentar FPS, tempo de física e estados. Tactical sprint e bunny hop ficam opcionais; bunny hop desabilitado inicialmente.
+- [x] F01.1 Capturar teclado/mouse separado do render; comandos em ticks fixos, normalização diagonal e bordas de botões.
+- [x] F01.2 Criar cápsula cinemática + character controller Rapier, grupos de colisão, grounded, gravidade e sincronização câmera/corpo.
+- [x] F01.3 Caminhada, aceleração, atrito, sprint e pulo; declarar regras de prioridade entre estados.
+- [x] F01.4 Agachar com mudança real do collider e checagem de teto antes de levantar.
+- [x] F01.5 Slide com velocidade mínima, atrito, duração e proteção contra ganho de velocidade por repetição.
+- [x] F01.6 Adicionar rampas, escadas, quinas, teto baixo e paredes finas ao mapa de testes compartilhado.
+- [x] F01.7 Instrumentar FPS, tempo de física e estados. Tactical sprint e bunny hop ficam opcionais; bunny hop desabilitado inicialmente.
 
 **Áreas:** client `player/physics/core`; shared `simulation/config/arena`.
 **Aceite:** mesma distância simulada a 30/60/144 FPS; sprint → slide → jump → land
@@ -141,6 +145,6 @@ Publicação externa permanece uma entrega futura, não realizada pelo scaffold.
 
 ## Próxima implementação recomendada
 
-Começar por **F01.1 + F01.2**: input e cápsula com caminhada/gravidade, usando a arena
-atual. Validar chão, paredes e timestep antes de adicionar sprint, slide ou arma.
-Depois concluir F01 e avançar F02/F03 conforme as dependências acima.
+Avançar para **F03.1–F03.4**: reutilizar o controlador no servidor, validar e limitar
+inputs e publicar snapshots com ack. Depois integrar prediction/reconciliation e
+interpolação remota. F02 já pode iniciar com viewmodel provisório, respeitando a autoridade de combate futura.

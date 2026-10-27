@@ -15,7 +15,15 @@
 - Reconexão e condição mínima de início ainda não aplicadas; sala base aceita 1–12 conexões para smoke.
 - Limite de mensagens por cliente aplicado desde a sala base; validação e orçamento de comandos
   de gameplay virão junto do processamento de inputs.
-- Documentos originais e skills preservados; sem commits, pushes ou mudanças de branch nesta etapa.
+- Documentos originais e skills preservados. Principal `master` confirmada pelo usuário;
+  features em branches com commits locais validados. Push/PR/merge dependem de solicitação.
+- F01 usa o controlador compartilhado no treino local. Entrar na sala pausa o treino;
+  não envia posições locais nem simula movimentação oficial antes de F03.
+- Rapier do cliente é carregado sob demanda. A câmera interpola poses do passo fixo;
+  o mouse altera apenas a orientação visual e os comandos seguintes.
+- O HUD recebe métricas a cada 200 ms, sem re-render React por frame.
+- Playwright roda Chromium com SwiftShader para smoke de WebGL e pointer lock.
+  Servidores dos testes usam portas isoladas; testes não substituem avaliação de feel ou perfil em GPU real.
 
 Referências verificadas durante a preparação:
 [Colyseus Server](https://docs.colyseus.io/server),
@@ -23,3 +31,6 @@ Referências verificadas durante a preparação:
 [State](https://docs.colyseus.io/state),
 [Rapier JS](https://www.rapier.rs/docs/user_guides/javascript/getting_started_js/),
 [Vite](https://vite.dev/guide/).
+
+Testes de navegador: [Playwright webServer](https://playwright.dev/docs/test-webserver)
+e [instalação do Chromium](https://playwright.dev/docs/browsers).

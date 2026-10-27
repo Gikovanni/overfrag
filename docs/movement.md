@@ -27,7 +27,8 @@ interpola poses; não escolhe o timestep nem resolve colisões.
 | Sliding   | Borda de C, chão, velocidade ≥ 6 m/s e cooldown zerado | 0,75 s, pulo ou perda do chão                                 |
 | Airborne  | Pulo ou ausência de piso                               | Contato válido com o piso                                     |
 
-Pulo tem prioridade sobre iniciar slide. Um slide usa a direção e velocidade
+Pulo tem prioridade sobre iniciar slide. A velocidade mínima usa também o
+deslocamento real: empurrar uma parede não habilita slide. Um slide usa a direção e velocidade
 existentes, desacelera 6 m/s² e não adiciona impulso. Ao terminar, aplica cooldown
 de 0,5 s. Air control é limitado e a velocidade aérea não passa de 8 m/s.
 Não há tactical sprint, coyote time, jump buffer nem bunny hop automático nesta etapa.
@@ -41,3 +42,17 @@ Esta entrega serve ao treino local. A sala online continua estática até F03.
 O controlador poderá ser usado no servidor; inputs recebidos precisarão passar
 por validação, fila e orçamento de tempo. Nenhuma posição local será aceita como
 estado oficial. Rapier entre ambientes ainda exige prediction/reconciliation.
+
+## Input e apresentação
+
+WASD/setas movimentam, Shift corre, Espaço pula, Ctrl agacha e C dispara slide.
+Jump, slide e reload são bordas consumidas uma vez por tick; sprint e crouch são
+estados mantidos. Uma pressão curta entre frames sobrevive até o próximo tick.
+Perder foco, esconder a aba ou sair do pointer lock limpa teclas e botões.
+O mouse permanece independente do render, com sensibilidade configurável.
+
+Uma instância de `LocalSimulation` possui mundo e controlador. O accumulator
+limita catch-up, registra tempo descartado e interpola entre as duas últimas
+poses da câmera, incluindo mudanças de altura. Cada tick resolve física uma vez.
+O HUD mostra velocidade efetiva (deslocamento horizontal por tick), estado,
+FPS e custo do último tick; são diagnósticos locais, sem alegação de benchmark.

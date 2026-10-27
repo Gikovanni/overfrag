@@ -16,10 +16,12 @@
     "format:check": "prettier --check .",
     "test": "pnpm --filter @overfrag/shared build && vitest run",
     "test:watch": "pnpm --filter @overfrag/shared build && vitest",
+    "test:e2e": "pnpm --filter @overfrag/shared build && playwright test",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.64.1",
     "@types/node": "^22.0.0",
     "eslint": "^10.13.0",
     "prettier": "^3.6.2",

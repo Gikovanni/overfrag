@@ -32,6 +32,12 @@ Abra duas abas, use nomes diferentes e conecte ambas. A contagem deve ser igual
 nas duas; os avatares são cápsulas estáticas. Clique na arena para controlar o olhar
 e pressione Esc para liberar o cursor. A rotação da câmera ainda é somente local.
 
+Sem conectar, a arena funciona como treino local: WASD move, Shift corre,
+Espaço pula, Ctrl agacha e C inicia slide quando já existe velocidade suficiente.
+Esc libera o cursor e limpa os controles. Ajuste a sensibilidade no painel.
+Rampas verdes, escadas azuis, teto roxo e parede fina vermelha permitem testar colisões.
+Ao conectar, o treino pausa: a sala permanece estática até a implementação de F03.
+
 ## O que a base já faz
 
 - Workspace com TypeScript estrito, lint, formatação, build e testes.
@@ -40,9 +46,12 @@ e pressione Esc para liberar o cursor. A rotação da câmera ainda é somente l
 - Simulação Rapier a passo fixo, com piso, paredes e coberturas compartilhados com o visual.
 - Interface de conexão, estado da sala, contagem de jogadores, tick e RTT.
 - Contrato de input e validador, configurações de movimento e rifle centralizadas.
+- Movimento local com cápsula Rapier, aceleração, atrito, sprint, jump, crouch e slide.
+- Câmera interpolada independente da física; FPS, custo de física, velocidade e estado no HUD.
+- Regras e transições documentadas em [docs/movement.md](docs/movement.md).
 
-Ainda não há controlador de personagem, movimentação, colisão de jogadores,
-prediction, reconciliation, interpolação, tiros, animações GLB, partidas ou reconexão
+Ainda não há movimentação multiplayer, colisão entre jogadores online,
+prediction/reconciliation de rede, interpolação remota, tiros, animações GLB, partidas ou reconexão
 implementados. Os números de vida no schema e as configurações são fundação para essas features.
 O limite de 12 conexões não equivale a uma validação de carga com 12 jogadores.
 
@@ -72,8 +81,14 @@ pnpm --filter @overfrag/server start
 ```sh
 pnpm check
 pnpm format:check
+pnpm exec playwright install chromium
+pnpm test:e2e
 ```
 
 `pnpm check` roda typecheck, ESLint, testes unitários/integração e build.
+`pnpm test:e2e` executa Playwright/Chromium com WebGL via SwiftShader, captura do
+mouse, controles e duas interfaces conectadas. A configuração inicia instâncias
+isoladas nas portas 4173 e 2568, sem reutilizar o servidor de desenvolvimento.
+Relatório HTML em `playwright-report/`; traces e screenshots em `test-results/`.
 Veja os cenários manuais e limites da cobertura em [docs/testing.md](docs/testing.md).
 Dependências resolvidas ficam fixadas no `pnpm-lock.yaml`.

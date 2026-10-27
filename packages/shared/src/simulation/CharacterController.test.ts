@@ -45,6 +45,70 @@ async function fixture(spawn = { x: 0, y: 0.92, z: 8 }) {
 }
 
 describe('controlador de personagem Rapier', () => {
+  it('não inicia slide apenas por empurrar uma parede sem deslocamento real', async () => {
+    const { step } = await fixture({ x: 0, y: 0.92, z: -10 });
+    const run = {
+      ...idle,
+      moveZ: -1,
+      buttons: { ...idle.buttons, sprint: true },
+    };
+    step(run, 120);
+    const state = step({ ...run, buttons: { ...run.buttons, slide: true } });
+    expect(state.movement).not.toBe('sliding');
+  });
+  it('sobe os degraus da pista e permanece apoiado', async () => {
+    const { step } = await fixture({ x: 4, y: 0.92, z: 0 });
+    const state = step({ ...idle, moveX: 1 }, 30);
+    expect(state.position.x).toBeGreaterThan(7.5);
+    expect(state.position.y).toBeGreaterThan(1.4);
+    expect(state.grounded).toBe(true);
+  });
+
+  it('sobe a rampa permitida sem atravessar a superfície', async () => {
+    const { player, step } = await fixture({ x: -13.5, y: 0.92, z: -7 });
+    let highest = 0;
+    for (let i = 0; i < 36; i++) {
+      const state = step({ ...idle, moveX: 1 });
+      highest = Math.max(highest, state.position.y);
+    }
+    expect(player.snapshot().position.x).toBeGreaterThan(-10);
+    expect(highest).toBeGreaterThan(2);
+  });
+
+  it('não escala rampa acima do limite e não atravessa parede fina', async () => {
+    const { player, step } = await fixture({ x: -13.5, y: 0.92, z: -12 });
+    const blocked = step({ ...idle, moveX: 1 }, 90);
+    expect(blocked.position.x).toBeLessThan(-10.7);
+    expect(blocked.position.y).toBeLessThan(1.2);
+    player.reset({ x: 6, y: 0.92, z: -9 });
+    step(idle, 5);
+    const wall = step(
+      {
+        ...idle,
+        moveZ: -1,
+        yaw: -Math.PI / 2,
+        buttons: { ...idle.buttons, sprint: true },
+      },
+      90,
+    );
+    expect(wall.position.x).toBeGreaterThan(10.4);
+    expect(wall.position.x).toBeLessThan(10.62);
+  });
+
+  it('slide expira e exige cooldown mesmo recebendo comandos repetidos', async () => {
+    const { step } = await fixture({ x: 0, y: 0.92, z: 12 });
+    const run = {
+      ...idle,
+      moveZ: -1,
+      buttons: { ...idle.buttons, sprint: true },
+    };
+    step(run, 20);
+    const slide = { ...run, buttons: { ...run.buttons, slide: true } };
+    expect(step(slide).movement).toBe('sliding');
+    expect(step(slide, 24).movement).not.toBe('sliding');
+    expect(step(slide, 5).movement).not.toBe('sliding');
+  });
+
   it('cai, encontra o piso e permanece estável', async () => {
     const { step } = await fixture({ x: 0, y: 5, z: 8 });
     const state = step(idle, 120);

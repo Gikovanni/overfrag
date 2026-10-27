@@ -35,6 +35,7 @@ export class CharacterController {
   private slideCooldown = 0;
   private slideX = 0;
   private slideZ = 0;
+  private effectiveSpeed = 0;
   private disposed = false;
 
   constructor(
@@ -77,6 +78,7 @@ export class CharacterController {
       this.grounded &&
       this.slideRemaining === 0 &&
       this.slideCooldown === 0 &&
+      this.effectiveSpeed >= MOVEMENT.slideMinSpeed &&
       speed >= MOVEMENT.slideMinSpeed
     ) {
       this.slideRemaining = MOVEMENT.slideDurationSeconds;
@@ -166,6 +168,7 @@ export class CharacterController {
       COLLISION.player,
     );
     const delta = this.controller.computedMovement();
+    this.effectiveSpeed = Math.hypot(delta.x, delta.z) / dt;
     const position = this.body.translation();
     this.body.setNextKinematicTranslation({
       x: position.x + delta.x,
@@ -250,6 +253,7 @@ export class CharacterController {
     this.movement = 'airborne';
     this.slideRemaining = 0;
     this.slideCooldown = 0;
+    this.effectiveSpeed = 0;
     this.world.propagateModifiedBodyPositionsToColliders();
   }
 

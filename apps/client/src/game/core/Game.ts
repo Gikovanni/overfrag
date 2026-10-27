@@ -11,16 +11,32 @@ import {
   Scene,
   WebGLRenderer,
 } from 'three';
-import { ARENA_BOXES, PLAYER } from '@overfrag/shared';
+import {
+  ARENA_BOXES,
+  MOVEMENT,
+  PLAYER,
+  type MovementState,
+} from '@overfrag/shared';
 import type { GameState } from '@overfrag/shared/schema';
-import { LookController } from '../player/LookController.js';
+import { InputController } from '../player/InputController.js';
+import type { LocalSimulation } from '../physics/LocalSimulation.js';
+
+export interface PerformanceView {
+  fps: number;
+  physicsMs: number;
+  speed: number;
+  movement: MovementState;
+  droppedSeconds: number;
+  online: boolean;
+  inputActive: boolean;
+}
 
 export class Game {
   private readonly renderer: WebGLRenderer;
   private readonly scene = new Scene();
   private readonly camera = new PerspectiveCamera(75, 1, 0.05, 120);
   private readonly resizeObserver: ResizeObserver;
-  private readonly look: LookController;
+  private readonly input: InputController;
   private readonly avatars = new Map<
     string,
     Mesh<CapsuleGeometry, MeshStandardMaterial>
@@ -31,8 +47,30 @@ export class Game {
     roughness: 0.8,
   });
   private localSessionId: string | undefined;
+  private lastFrame: number | undefined;
+  private metricSeconds = 0;
+  private metricFrames = 0;
+  private disposed = false;
 
-  constructor(private readonly container: HTMLElement) {
+  static async create(
+    container: HTMLElement,
+    onMetrics: (view: PerformanceView) => void,
+  ): Promise<Game> {
+    const { LocalSimulation } = await import('../physics/LocalSimulation.js');
+    const simulation = await LocalSimulation.create();
+    try {
+      return new Game(container, simulation, onMetrics);
+    } catch (error) {
+      simulation.dispose();
+      throw error;
+    }
+  }
+
+  private constructor(
+    private readonly container: HTMLElement,
+    private readonly simulation: LocalSimulation,
+    private readonly onMetrics: (view: PerformanceView) => void,
+  ) {
     this.renderer = new WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.append(this.renderer.domElement);
@@ -53,16 +91,55 @@ export class Game {
         new MeshStandardMaterial({ color: box.color, roughness: 0.9 }),
       );
       mesh.position.set(box.center.x, box.center.y, box.center.z);
+      mesh.rotation.z = box.rotationZ ?? 0;
       this.scene.add(mesh);
     }
     this.camera.position.set(0, PLAYER.eyeHeight, 10);
-    this.look = new LookController(this.renderer.domElement, this.camera);
+    this.camera.rotation.order = 'YXZ';
+    this.input = new InputController(this.renderer.domElement);
     this.resizeObserver = new ResizeObserver(this.resize);
     this.resizeObserver.observe(container);
     this.resize();
-    this.renderer.setAnimationLoop(() =>
-      this.renderer.render(this.scene, this.camera),
-    );
+    this.renderer.setAnimationLoop(this.frame);
+  }
+
+  private readonly frame = (timeMs: number) => {
+    const delta =
+      this.lastFrame === undefined
+        ? 0
+        : Math.max(0, (timeMs - this.lastFrame) / 1_000);
+    this.lastFrame = timeMs;
+    const online = this.localSessionId !== undefined;
+    if (!online) {
+      this.simulation.advance(delta, (tick) => this.input.state.sample(tick));
+      this.simulation.writeCameraPosition(this.camera.position);
+    }
+    this.camera.rotation.x = this.input.state.pitch;
+    this.camera.rotation.y = this.input.state.yaw;
+    this.renderer.render(this.scene, this.camera);
+    this.metricFrames++;
+    this.metricSeconds += delta;
+    if (this.metricSeconds >= 0.2) {
+      this.onMetrics({
+        fps: Math.round(this.metricFrames / this.metricSeconds),
+        physicsMs: online ? 0 : this.simulation.physicsMs,
+        speed: online ? 0 : this.simulation.speed,
+        movement: this.simulation.state.movement,
+        droppedSeconds: this.simulation.droppedSeconds,
+        online,
+        inputActive: this.input.active,
+      });
+      this.metricFrames = 0;
+      this.metricSeconds = 0;
+    }
+  };
+
+  setSensitivity(sensitivity: number): void {
+    if (Number.isFinite(sensitivity))
+      this.input.state.sensitivity = Math.max(
+        0.0005,
+        Math.min(0.006, sensitivity),
+      );
   }
 
   private readonly resize = () => {
@@ -78,10 +155,14 @@ export class Game {
     if (local && this.localSessionId !== sessionId) {
       this.camera.position.set(
         local.x,
-        local.y + PLAYER.eyeHeight - 0.9,
+        local.y +
+          PLAYER.eyeHeight -
+          MOVEMENT.standingHalfHeight -
+          MOVEMENT.capsuleRadius,
         local.z,
       );
       this.localSessionId = sessionId;
+      this.input.state.clear();
     }
     const visible = new Set<string>();
     state.players.forEach((player, id) => {
@@ -108,13 +189,19 @@ export class Game {
     for (const avatar of this.avatars.values()) this.scene.remove(avatar);
     this.avatars.clear();
     this.localSessionId = undefined;
-    this.camera.position.set(0, PLAYER.eyeHeight, 10);
+    if (!this.disposed) {
+      this.simulation.reset();
+      this.input.state.clear();
+      this.lastFrame = undefined;
+    }
   }
 
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     this.renderer.setAnimationLoop(null);
     this.resizeObserver.disconnect();
-    this.look.dispose();
+    this.input.dispose();
     this.clearPlayers();
     this.scene.traverse((object) => {
       if (object instanceof Mesh) {
@@ -128,6 +215,7 @@ export class Game {
     this.avatarGeometry.dispose();
     this.avatarMaterial.dispose();
     this.scene.clear();
+    this.simulation.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }
